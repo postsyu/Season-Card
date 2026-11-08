@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>きせつカード</title>
+<style>
+:root{--bg:#fff8ec;--fg:#2b2b2b;--card:#fff;--ac2:#f1e3cc;--mut:#8a7a62;--haru:#f783ac;--natsu:#22b8cf;--aki:#f76707;--fuyu:#5c7cfa;--all:#2b2b2b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#1d1a16;--fg:#f3ece0;--card:#2a251f;--ac2:#3a332a;--mut:#a89a82;--all:#f3ece0;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,"Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;overflow:hidden}
+.scr{display:none;flex-direction:column;align-items:center;height:100%;padding:16px;gap:14px;overflow-y:auto}
+.scr.on{display:flex}
+h1{font-size:clamp(40px,8vw,64px);margin:18px 0 6px}
+h2{font-size:30px;margin:6px 0}
+.menu{display:flex;flex-direction:column;gap:18px;width:100%;max-width:760px}
+.menu button{border:0;border-radius:28px;font-size:clamp(34px,7vw,52px);font-weight:800;padding:34px 12px;color:#fff;display:flex;align-items:center;justify-content:center;gap:16px}
+.menu button small{display:block;font-size:22px;font-weight:700;opacity:.9}
+#m-karuta{background:var(--aki)}#m-nakama{background:var(--natsu)}
+.sec{width:100%;max-width:760px;background:var(--card);border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.sec .lb{font-size:22px;font-weight:800;color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{border:4px solid transparent;border-radius:18px;font-size:26px;font-weight:800;padding:14px 18px;background:var(--ac2);color:var(--fg);opacity:.55}
+.chip.on{opacity:1;border-color:var(--fg)}
+.chip[data-s=haru].on{background:var(--haru);color:#fff}
+.chip[data-s=natsu].on{background:var(--natsu);color:#fff}
+.chip[data-s=aki].on{background:var(--aki);color:#fff}
+.chip[data-s=fuyu].on{background:var(--fuyu);color:#fff}
+.cnt{font-size:22px;color:var(--mut);text-align:center}
+.bigbtn{border:0;border-radius:24px;font-size:36px;font-weight:800;padding:26px;background:var(--fg);color:var(--bg);width:100%;max-width:760px}
+.bigbtn:disabled{opacity:.3}
+.sub2{border:0;border-radius:20px;font-size:24px;font-weight:700;padding:16px;background:var(--ac2);color:var(--fg);width:100%;max-width:760px}
+/* game */
+.bar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:760px;gap:10px}
+#back{border:0;border-radius:16px;font-size:20px;font-weight:700;padding:12px 16px;background:var(--ac2);color:var(--mut);position:relative;overflow:hidden}
+#back .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(0,0,0,.15)}
+#back.hold .fill{width:100%;transition:width 1.2s linear}
+#pos{font-size:24px;color:var(--mut);font-weight:700}
+.card{flex:1;min-height:0;width:100%;max-width:760px;background:var(--card);border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;text-align:center;border:8px solid transparent}
+.card.haru{border-color:var(--haru)}.card.natsu{border-color:var(--natsu)}.card.aki{border-color:var(--aki)}.card.fuyu{border-color:var(--fuyu)}
+.q{font-size:clamp(30px,6.5vw,52px);font-weight:800;line-height:1.35;color:var(--mut)}
+.q b{color:var(--fg)}
+.a{font-size:clamp(46px,11vw,92px);font-weight:800;line-height:1.25;word-break:break-word}
+.alist{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:100%}
+.alist span{font-size:clamp(26px,5.2vw,40px);font-weight:800;background:var(--ac2);border-radius:16px;padding:10px 16px}
+.ico{font-size:80px;line-height:1}
+.hid{visibility:hidden}
+.row{display:flex;gap:12px;width:100%;max-width:760px}
+.row button{flex:1;border:0;border-radius:22px;font-size:28px;font-weight:800;padding:24px 6px;background:var(--ac2);color:var(--fg)}
+.row button.main{background:var(--fg);color:var(--bg);flex:2}
+.row button.act{background:var(--fg);color:var(--bg)}
+</style>
+</head>
+<body>
+
+<!-- メニュー -->
+<div class="scr on" id="s-menu">
+  <h1>🍁 きせつカード ⛄</h1>
+  <div class="menu">
+    <button id="m-karuta"><span>🎴</span><span>かるた<small>よみあげを きいて カードを とろう</small></span></button>
+    <button id="m-nakama"><span>🧺</span><span>なかまあつめ<small>おなじ なかまの カードを あつめよう</small></span></button>
+  </div>
+</div>
+
+<!-- せってい -->
+<div class="scr" id="s-setup">
+  <h2 id="setup-title"></h2>
+  <div class="sec">
+    <div class="lb">きせつ</div>
+    <div class="chips" id="c-season"></div>
+  </div>
+  <div class="sec">
+    <div class="lb">しゅるい</div>
+    <div class="chips" id="c-cat"></div>
+  </div>
+  <div class="sec" id="sec-form">
+    <div class="lb">もんだいの かたち</div>
+    <div class="chips" id="c-form"></div>
+  </div>
+  <div class="sec" id="sec-think">
+    <div class="lb">かんがえる じかん</div>
+    <div class="chips" id="c-think"></div>
+  </div>
+  <div class="sec">
+    <div class="lb" id="gap-lb">よみあげの かんかく</div>
+    <div class="chips" id="c-gap"></div>
+  </div>
+  <div class="sec">
+    <div class="lb">よむ はやさ</div>
+    <div class="chips" id="c-rate"></div>
+  </div>
+  <div class="sec">
+    <div class="lb">がめんに ひょうじ</div>
+    <div class="chips" id="c-show"></div>
+  </div>
+  <div class="cnt" id="cnt"></div>
+  <button class="bigbtn" id="start">スタート ▶</button>
+  <button class="sub2" id="tomenu">← めにゅーに もどる</button>
+</div>
+
+<!-- ゲーム -->
+<div class="scr" id="s-game">
+  <div class="bar">
+    <button id="back"><span class="fill"></span><span style="position:relative">ながおしで もどる</span></button>
+    <div id="pos"></div>
+  </div>
+  <div class="card" id="card">
+    <div class="ico" id="ico"></div>
+    <div class="q" id="q"></div>
+    <div class="a" id="a"></div>
+    <div class="alist" id="alist"></div>
+  </div>
+  <div class="row">
+    <button id="again">🔊 もういちど</button>
+    <button id="reveal">👀 こたえ</button>
+  </div>
+  <div class="row">
+    <button id="auto">じどう ▶</button>
+    <button id="next" class="main">つぎ ▶</button>
+  </div>
+</div>
+
+<script>
+// ===== データ =====
+// s: きせつ, c: しゅるい, k: ひょうじ(ひらがな), y: よみあげ用（漢字・カタカナで正しい発音に）, m: 行事の月
+var SEASONS=[["haru","はる","春"],["natsu","なつ","夏"],["aki","あき","秋"],["fuyu","ふゆ","冬"]];
+var CATS=[["hana","しょくぶつ","植物","🌸"],["iki","いきもの","生き物","🐞"],["tabe","たべもの","食べ物","🍎"],["gyo","ぎょうじ","行事","🎏"],["bame","ばめん","場面","🏞️"]];
+var MONTH=["","いちがつ","にがつ","さんがつ","しがつ","ごがつ","ろくがつ","しちがつ","はちがつ","くがつ","じゅうがつ","じゅういちがつ","じゅうにがつ"];
+var CARDS=[
+ ["haru","hana","ちゅーりっぷ","チューリップ"],["haru","hana","さくらのはな","桜の花"],["haru","hana","たんぽぽ","たんぽぽ"],
+ ["natsu","hana","あさがお","朝顔"],["natsu","hana","あじさい","紫陽花"],["natsu","hana","ひまわり","ひまわり"],
+ ["aki","hana","きく","菊"],["aki","hana","こすもす","コスモス"],["aki","hana","すすき","すすき"],
+ ["fuyu","hana","しくらめん","シクラメン"],["fuyu","hana","つばき","椿"],["fuyu","hana","うめのはな","梅の花"],
+ ["haru","iki","もんしろちょう","モンシロチョウ"],["haru","iki","おたまじゃくし","おたまじゃくし"],
+ ["natsu","iki","かぶとむし","カブトムシ"],["natsu","iki","せみ","セミ"],
+ ["aki","iki","あかとんぼ","赤とんぼ"],["aki","iki","すずむし","鈴虫"],
+ ["fuyu","iki","はくちょう","白鳥"],["fuyu","iki","つる","鶴"],
+ ["haru","tabe","いちご","いちご"],["haru","tabe","たけのこ","たけのこ"],["haru","tabe","かしわもち","柏餅"],["haru","tabe","ぐりんぴーす","グリンピース"],
+ ["natsu","tabe","すいか","スイカ"],["natsu","tabe","もも","桃"],["natsu","tabe","そうめん","そうめん"],["natsu","tabe","とうもろこし","とうもろこし"],
+ ["aki","tabe","かき","柿"],["aki","tabe","くり","栗"],["aki","tabe","ぶどう","ぶどう"],["aki","tabe","つきみだんご","月見団子"],
+ ["fuyu","tabe","みかん","みかん"],["fuyu","tabe","はくさい","白菜"],["fuyu","tabe","ふくまめ","福豆"],["fuyu","tabe","かがみもち","鏡餅"],
+ ["fuyu","gyo","おしょうがつ","お正月",1],["fuyu","gyo","せつぶん","節分",2],["haru","gyo","ひなまつり","ひな祭り",3],
+ ["haru","gyo","にゅうえんしき","入園式",4],["haru","gyo","こどものひ","こどもの日",5],["natsu","gyo","つゆ","梅雨",6],
+ ["natsu","gyo","たなばた","七夕",7],["natsu","gyo","かいすいよく","海水浴",8],["aki","gyo","おつきみ","お月見",9],
+ ["aki","gyo","うんどうかい","運動会",10],["aki","gyo","しちごさん","七五三",11],["fuyu","gyo","くりすます","クリスマス",12],
+ ["haru","bame","はる","春"],["natsu","bame","なつ","夏"],["aki","bame","あき","秋"],["fuyu","bame","ふゆ","冬"]
+].map(function(r){return{s:r[0],c:r[1],k:r[2],y:r[3],m:r[4]||0}});
+function S(id){for(var i=0;i<SEASONS.length;i++)if(SEASONS[i][0]===id)return SEASONS[i]}
+function K(id){for(var i=0;i<CATS.length;i++)if(CATS[i][0]===id)return CATS[i]}
+
+// ===== せってい =====
+var FORMS=[["mix","きせつと しゅるい"],["season","きせつだけ"],["cat","しゅるいだけ"]];
+var cfg={season:["haru","natsu","aki","fuyu"],cat:["hana","iki","tabe","gyo","bame"],form:["mix"],think:10,gap:5,rate:0.85,showQ:true,showA:true};
+try{var sv=JSON.parse(localStorage.getItem("seasoncard")||"null");if(sv)for(var key in sv)cfg[key]=sv[key]}catch(e){}
+function save(){try{localStorage.setItem("seasoncard",JSON.stringify(cfg))}catch(e){}}
+
+var $=function(i){return document.getElementById(i)};
+var game="karuta";
+
+function show(id){["s-menu","s-setup","s-game"].forEach(function(s){$(s).className="scr"+(s===id?" on":"")})}
+
+// 複数選択チップ（「ぜんぶ」つき）
+function multi(box,items,key,attr){
+  var el=$(box);el.innerHTML="";
+  var all=document.createElement("button");all.className="chip";all.textContent="ぜんぶ";el.appendChild(all);
+  var btns=items.map(function(it){
+    var b=document.createElement("button");b.className="chip";b.textContent=it[1]+(it[3]?" "+it[3]:"");
+    if(attr)b.setAttribute("data-s",it[0]);
+    b.onclick=function(){var a=cfg[key],i=a.indexOf(it[0]);if(i>-1)a.splice(i,1);else a.push(it[0]);paint();save();count()};
+    el.appendChild(b);return b});
+  function paint(){
+    btns.forEach(function(b,i){b.className="chip"+(cfg[key].indexOf(items[i][0])>-1?" on":"")});
+    all.className="chip"+(cfg[key].length===items.length?" on":"");
+  }
+  all.onclick=function(){cfg[key]=cfg[key].length===items.length?[]:items.map(function(x){return x[0]});paint();save();count()};
+  paint();
+}
+// 1つだけ選ぶチップ
+function single(box,items,key){
+  var el=$(box);el.innerHTML="";
+  var btns=items.map(function(it){
+    var b=document.createElement("button");b.className="chip";b.textContent=it[1];
+    b.onclick=function(){cfg[key]=it[0];paint();save()};el.appendChild(b);return b});
+  function paint(){btns.forEach(function(b,i){b.className="chip"+(cfg[key]===items[i][0]?" on":"")})}
+  paint();
+}
+
+function pool(){return CARDS.filter(function(c){return cfg.season.indexOf(c.s)>-1&&cfg.cat.indexOf(c.c)>-1})}
+
+// 仲間集めの問題づくり
+function nakamaQs(){
+  var qs=[],p=pool();
+  function add(label,yomi,cards,season){if(cards.length)qs.push({label:label,yomi:yomi,cards:cards,s:season})}
+  if(cfg.form.indexOf("mix")>-1)
+    cfg.season.forEach(function(s){cfg.cat.forEach(function(c){
+      add(S(s)[1]+"の "+K(c)[1],S(s)[2]+"の"+K(c)[2],p.filter(function(x){return x.s===s&&x.c===c}),s)})});
+  if(cfg.form.indexOf("season")>-1)
+    cfg.season.forEach(function(s){add(S(s)[1]+"の かーど",S(s)[2]+"のカード",p.filter(function(x){return x.s===s}),s)});
+  if(cfg.form.indexOf("cat")>-1)
+    cfg.cat.forEach(function(c){add(K(c)[1]+"の かーど",K(c)[2]+"のカード",p.filter(function(x){return x.c===c}),"")});
+  return qs;
+}
+
+function count(){
+  var n=game==="karuta"?pool().length:nakamaQs().length;
+  $("cnt").textContent=game==="karuta"?("かーどは "+n+"まい"):("もんだいは "+n+"もん");
+  $("start").disabled=n===0;
+}
+
+function openSetup(g){
+  game=g;
+  $("setup-title").textContent=g==="karuta"?"🎴 かるた":"🧺 なかまあつめ";
+  $("sec-form").style.display=g==="nakama"?"":"none";
+  $("sec-think").style.display=g==="nakama"?"":"none";
+  $("gap-lb").textContent=g==="karuta"?"よみあげの かんかく":"こたえの あと つぎまでの かんかく";
+  multi("c-season",SEASONS,"season",true);
+  multi("c-cat",CATS.map(function(c){return[c[0],c[1],c[2],c[3]]}),"cat");
+  multi("c-form",FORMS,"form");
+  single("c-think",[[5,"5びょう"],[10,"10びょう"],[15,"15びょう"],[20,"20びょう"],[30,"30びょう"]],"think");
+  single("c-gap",[[3,"3びょう"],[5,"5びょう"],[7,"7びょう"],[9,"9びょう"]],"gap");
+  single("c-rate",[[0.7,"ゆっくり"],[0.85,"ふつう"],[1,"はやい"]],"rate");
+  // ひょうじ（もんだい・こたえ を別々にオンオフ）
+  var el=$("c-show");el.innerHTML="";
+  [["showQ","もんだい"],["showA","こたえ"]].forEach(function(it){
+    var b=document.createElement("button");
+    var paint=function(){b.className="chip"+(cfg[it[0]]?" on":"");b.textContent=it[1]+(cfg[it[0]]?" みせる":" かくす")};
+    b.onclick=function(){cfg[it[0]]=!cfg[it[0]];paint();save()};paint();el.appendChild(b)});
+  count();show("s-setup");
+}
+$("m-karuta").onclick=function(){openSetup("karuta")};
+$("m-nakama").onclick=function(){openSetup("nakama")};
+$("tomenu").onclick=function(){show("s-menu")};
+
+// ===== よみあげ =====
+var voices=[],lock=null;
+function loadVoices(){voices=(window.speechSynthesis&&speechSynthesis.getVoices())||[]}
+if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function pickVoice(){
+  var l=voices.filter(function(v){return v.lang.replace("_","-").indexOf("ja")===0});
+  if(!l.length)return null;
+  var rank=function(v){var n=v.name.toLowerCase();return(n.indexOf("premium")>-1||n.indexOf("enhanced")>-1||n.indexOf("siri")>-1)?0:1};
+  l.sort(function(a,b){return rank(a)-rank(b)});return l[0];
+}
+function keepAwake(){try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){lock=l}).catch(function(){})}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&$("s-game").className.indexOf("on")>-1)keepAwake()});
+
+var run=0; // 操作のたびに増やして、古いタイマーやよみあげの続きを止める
+function stopAll(){run++;clearTimeout(timer);if(window.speechSynthesis)speechSynthesis.cancel()}
+// parts を順番に読む（あいだに少し間をあける）
+function say(parts,cb){
+  var my=run,i=0;
+  if(!window.speechSynthesis){if(cb)cb();return}
+  speechSynthesis.cancel();
+  function one(){
+    if(my!==run)return;
+    if(i>=parts.length){if(cb)cb();return}
+    var u=new SpeechSynthesisUtterance(parts[i++]);
+    u.lang="ja-JP";var v=pickVoice();if(v)u.voice=v;u.rate=cfg.rate;
+    var done=false;var fin=function(){if(done)return;done=true;if(my!==run)return;setTimeout(one,i<parts.length?700:0)};
+    u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);
+  }
+  one();
+}
+function wait(sec,fn){var my=run;clearTimeout(timer);timer=setTimeout(function(){if(my===run)fn()},sec*1000)}
+
+// ===== ゲーム =====
+var deck=[],pos=-1,phase="",auto=false,timer=null,revealed=false;
+
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+function startGame(){
+  deck=shuffle(game==="karuta"?pool():nakamaQs());pos=-1;phase="";
+  setAuto(false);show("s-game");keepAwake();
+  $("pos").textContent="";$("card").className="card";
+  $("ico").textContent=game==="karuta"?"🎴":"🧺";$("q").className="q";$("a").className="a";$("alist").innerHTML="";
+  $("q").innerHTML="<b>"+deck.length+"</b>"+(game==="karuta"?"まいの かーどを よむよ":"もんの もんだいを だすよ");
+  $("a").textContent="すたーと ▶";
+  $("next").textContent="すたーと ▶";$("reveal").style.visibility="hidden";
+}
+$("start").onclick=startGame;
+
+function karutaHint(c){
+  if(c.c==="bame")return{t:"きせつの <b>ばめん</b>",y:"季節の場面です"};
+  if(c.c==="gyo")return{t:"<b>"+S(c.s)[1]+"</b>の "+K(c.c)[1]+"（"+MONTH[c.m]+"）",y:S(c.s)[2]+"の行事、"+c.m+"月です"};
+  return{t:"<b>"+S(c.s)[1]+"</b>の "+K(c.c)[1],y:S(c.s)[2]+"の"+K(c.c)[2]+"です"};
+}
+
+function render(){
+  var it=deck[pos];if(!it)return;
+  $("pos").textContent=(pos+1)+" / "+deck.length;
+  $("reveal").style.visibility="visible";
+  $("card").className="card "+(it.s||"");
+  $("alist").innerHTML="";$("a").textContent="";
+  var showA=cfg.showA||revealed;
+  if(game==="karuta"){
+    $("ico").textContent=K(it.c)[3];
+    $("q").innerHTML=karutaHint(it).t;$("q").className="q"+(cfg.showQ||revealed?"":" hid");
+    $("a").textContent=it.k;$("a").className="a"+(showA?"":" hid");
+    $("reveal").className=showA?"act":"";
+  }else{
+    $("ico").textContent=it.c?"":"🧺";
+    $("q").innerHTML="<b>"+it.label+"</b>を さがそう<br>かーどは <b>"+it.cards.length+"まい</b>";
+    $("q").className="q"+(cfg.showQ||revealed?"":" hid");
+    if(phase==="a"){
+      it.cards.forEach(function(c){var s=document.createElement("span");s.textContent=c.k;$("alist").appendChild(s)});
+      $("alist").className="alist"+(showA?"":" hid");
+    }else if(revealed){
+      it.cards.forEach(function(c){var s=document.createElement("span");s.textContent=c.k;$("alist").appendChild(s)});
+      $("alist").className="alist";
+    }
+    $("reveal").className=revealed||(phase==="a"&&cfg.showA)?"act":"";
+  }
+}
+
+function speech(){
+  var it=deck[pos];
+  if(game==="karuta")return[karutaHint(it).y,it.y];
+  if(phase==="q")return[(pos>0?"次の問題です。":"")+"仲間集めをします",it.yomi+"を探してください。カードは"+it.cards.length+"枚あります"];
+  return["正解のカードは"+it.cards.length+"枚で、"+it.cards.map(function(c){return c.y}).join("、")+"です"];
+}
+
+function finish(){
+  phase="end";$("pos").textContent="";$("card").className="card";$("reveal").style.visibility="hidden";
+  $("ico").textContent="🎉";$("q").className="q";$("q").innerHTML="";$("a").className="a";$("a").textContent="おしまい！";$("alist").innerHTML="";
+  $("next").textContent="もういちど ▶";setAuto(false,true);
+  say(["おしまいです"]);
+}
+
+// 1ステップ進める
+function step(){
+  stopAll();
+  if(phase==="end"){startGame();return}
+  if(game==="nakama"&&phase==="q"){phase="a";revealed=false;render();updNext();say(speech(),afterSpeak);return}
+  pos++;
+  if(pos>=deck.length){finish();return}
+  phase="q";revealed=false;render();updNext();say(speech(),afterSpeak);
+}
+function updNext(){$("next").textContent=(game==="nakama"&&phase==="q")?"こたえ ▶":(pos>=deck.length-1&&(game==="karuta"||phase==="a")?"おわり ▶":"つぎ ▶")}
+function afterSpeak(){
+  if(!auto)return;
+  if(game==="nakama"&&phase==="q")wait(cfg.think,step);
+  else wait(cfg.gap,step);
+}
+function setAuto(on,silent){
+  auto=on;$("auto").textContent=on?"■ とめる":"じどう ▶";$("auto").className=on?"act":"";
+}
+
+$("next").onclick=function(){step()};
+$("auto").onclick=function(){
+  if(auto){setAuto(false);stopAll();return}
+  setAuto(true);
+  if(phase==="end"){startGame();setAuto(true)}
+  step();
+};
+$("again").onclick=function(){
+  if(pos<0||phase==="end"||!deck[pos])return;
+  stopAll();say(speech(),afterSpeak);
+};
+$("reveal").onclick=function(){if(pos<0||phase==="end")return;revealed=!revealed;render()};
+
+// もどる: 1.2秒ながおし
+var bt=null;
+function bStart(e){e.preventDefault();$("back").className="hold";bt=setTimeout(function(){$("back").className="";stopAll();setAuto(false);openSetup(game)},1200)}
+function bEnd(){clearTimeout(bt);$("back").className=""}
+$("back").addEventListener("touchstart",bStart,{passive:false});
+$("back").addEventListener("touchend",bEnd);$("back").addEventListener("touchcancel",bEnd);
+$("back").addEventListener("mousedown",bStart);$("back").addEventListener("mouseup",bEnd);$("back").addEventListener("mouseleave",bEnd);
+
+document.addEventListener("gesturestart",function(e){e.preventDefault()});
+</script>
+</body>
+</html>
