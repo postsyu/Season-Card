@@ -43,7 +43,7 @@ h2{font-size:30px;margin:6px 0}
 .q{font-size:clamp(30px,6.5vw,52px);font-weight:800;line-height:1.35;color:var(--mut)}
 .q b{color:var(--fg)}
 .a{font-size:clamp(46px,11vw,92px);font-weight:800;line-height:1.25;word-break:break-word}
-.alist{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:100%}
+.alist{margin-top:6px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:100%}
 .alist span{font-size:clamp(26px,5.2vw,40px);font-weight:800;background:var(--ac2);border-radius:16px;padding:10px 16px}
 .ico{font-size:80px;line-height:1}
 .hid{visibility:hidden}
@@ -51,6 +51,10 @@ h2{font-size:30px;margin:6px 0}
 .row button{flex:1;border:0;border-radius:22px;font-size:28px;font-weight:800;padding:24px 6px;background:var(--ac2);color:var(--fg)}
 .row button.main{background:var(--fg);color:var(--bg);flex:2}
 .row button.act{background:var(--fg);color:var(--bg)}
+#m-free{background:var(--fuyu)}
+#m-hazure{background:var(--haru)}#m-kisetsu{background:var(--aki)}#m-maruba{background:var(--natsu)}#m-junban{background:#37b24d}
+.menu .back2{background:var(--ac2);color:var(--fg);font-size:28px;padding:20px}
+.a small{display:block;font-size:clamp(24px,4.6vw,36px);color:var(--mut);margin-top:10px}
 </style>
 </head>
 <body>
@@ -61,29 +65,46 @@ h2{font-size:30px;margin:6px 0}
   <div class="menu">
     <button id="m-karuta"><span>🎴</span><span>かるた<small>よみあげを きいて カードを とろう</small></span></button>
     <button id="m-nakama"><span>🧺</span><span>なかまあつめ<small>おなじ なかまの カードを あつめよう</small></span></button>
+    <button id="m-free"><span>🗣️</span><span>かーどなしで あそぶ<small>きいて こたえる くいず</small></span></button>
+  </div>
+</div>
+
+<!-- カードを つかわない ゲーム -->
+<div class="scr" id="s-menu2">
+  <h1>🗣️ かーどなしで あそぶ</h1>
+  <div class="menu">
+    <button id="m-hazure"><span>🙅</span><span>なかまはずれ<small>ひとつだけ ちがう きせつは どれ？</small></span></button>
+    <button id="m-kisetsu"><span>🤔</span><span>どの きせつ？<small>きいた ものの きせつを こたえよう</small></span></button>
+    <button id="m-maruba"><span>⭕</span><span>まる・ばつ<small>ほんとうかな？ うそかな？</small></span></button>
+    <button id="m-junban"><span>📅</span><span>ぎょうじの じゅんばん<small>つぎの ぎょうじは なに？</small></span></button>
+    <button class="back2" id="m-back">← もどる</button>
   </div>
 </div>
 
 <!-- せってい -->
 <div class="scr" id="s-setup">
   <h2 id="setup-title"></h2>
-  <div class="sec">
+  <div class="sec" data-k="season">
     <div class="lb">きせつ</div>
     <div class="chips" id="c-season"></div>
   </div>
-  <div class="sec">
+  <div class="sec" data-k="cat">
     <div class="lb">しゅるい</div>
     <div class="chips" id="c-cat"></div>
   </div>
-  <div class="sec" id="sec-form">
+  <div class="sec" data-k="form">
     <div class="lb">もんだいの かたち</div>
     <div class="chips" id="c-form"></div>
   </div>
-  <div class="sec" id="sec-think">
+  <div class="sec" data-k="num">
+    <div class="lb">もんだいの かず</div>
+    <div class="chips" id="c-num"></div>
+  </div>
+  <div class="sec" data-k="think">
     <div class="lb">かんがえる じかん</div>
     <div class="chips" id="c-think"></div>
   </div>
-  <div class="sec">
+  <div class="sec" data-k="gap">
     <div class="lb" id="gap-lb">よみあげの かんかく</div>
     <div class="chips" id="c-gap"></div>
   </div>
@@ -150,16 +171,24 @@ var CARDS=[
 function S(id){for(var i=0;i<SEASONS.length;i++)if(SEASONS[i][0]===id)return SEASONS[i]}
 function K(id){for(var i=0;i<CATS.length;i++)if(CATS[i][0]===id)return CATS[i]}
 
-// ===== せってい =====
+// ===== ゲームごとの せってい項目 =====
+var GAMES={
+  karuta:{t:"🎴 かるた",ico:"🎴",sec:["season","cat","gap"],menu:"s-menu"},
+  nakama:{t:"🧺 なかまあつめ",ico:"🧺",sec:["season","cat","form","think","gap"],menu:"s-menu"},
+  hazure:{t:"🙅 なかまはずれ",ico:"🙅",sec:["season","cat","num","think","gap"],menu:"s-menu2"},
+  kisetsu:{t:"🤔 どの きせつ？",ico:"🤔",sec:["season","cat","num","think","gap"],menu:"s-menu2"},
+  maruba:{t:"⭕ まる・ばつ",ico:"⭕",sec:["season","cat","num","think","gap"],menu:"s-menu2"},
+  junban:{t:"📅 ぎょうじの じゅんばん",ico:"📅",sec:["num","think","gap"],menu:"s-menu2"}
+};
 var FORMS=[["mix","きせつと しゅるい"],["season","きせつだけ"],["cat","しゅるいだけ"]];
-var cfg={season:["haru","natsu","aki","fuyu"],cat:["hana","iki","tabe","gyo","bame"],form:["mix"],think:10,gap:5,rate:0.85,showQ:true,showA:true};
+var cfg={season:["haru","natsu","aki","fuyu"],cat:["hana","iki","tabe","gyo","bame"],form:["mix"],num:10,think:10,gap:5,rate:0.85,showQ:true,showA:true};
 try{var sv=JSON.parse(localStorage.getItem("seasoncard")||"null");if(sv)for(var key in sv)cfg[key]=sv[key]}catch(e){}
 function save(){try{localStorage.setItem("seasoncard",JSON.stringify(cfg))}catch(e){}}
 
 var $=function(i){return document.getElementById(i)};
 var game="karuta";
 
-function show(id){["s-menu","s-setup","s-game"].forEach(function(s){$(s).className="scr"+(s===id?" on":"")})}
+function show(id){["s-menu","s-menu2","s-setup","s-game"].forEach(function(s){$(s).className="scr"+(s===id?" on":"")})}
 
 // 複数選択チップ（「ぜんぶ」つき）
 function multi(box,items,key,attr){
@@ -182,17 +211,31 @@ function single(box,items,key){
   var el=$(box);el.innerHTML="";
   var btns=items.map(function(it){
     var b=document.createElement("button");b.className="chip";b.textContent=it[1];
-    b.onclick=function(){cfg[key]=it[0];paint();save()};el.appendChild(b);return b});
+    b.onclick=function(){cfg[key]=it[0];paint();save();count()};el.appendChild(b);return b});
   function paint(){btns.forEach(function(b,i){b.className="chip"+(cfg[key]===items[i][0]?" on":"")})}
   paint();
 }
 
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
 function pool(){return CARDS.filter(function(c){return cfg.season.indexOf(c.s)>-1&&cfg.cat.indexOf(c.c)>-1})}
+function poolNoBame(){return pool().filter(function(c){return c.c!=="bame"})}
+// 「なつの しょくぶつ」のような よびかた
+function kind(c){return c.c==="bame"?"きせつ":K(c.c)[1]}
+function kindY(c){return c.c==="bame"?"季節":K(c.c)[2]}
 
-// 仲間集めの問題づくり
+// ===== 問題づくり =====
+// 問題の形: {sq:問題中のわく色, sa:こたえのわく色, q:表示, qy:[よみ], a:こたえ表示 または list:[こたえ], ay:[よみ]}
 function nakamaQs(){
   var qs=[],p=pool();
-  function add(label,yomi,cards,season){if(cards.length)qs.push({label:label,yomi:yomi,cards:cards,s:season})}
+  function add(label,yomi,cards,season){
+    if(!cards.length)return;
+    qs.push({sq:season,sa:season,
+      q:"<b>"+label+"</b>を さがそう<br>かーどは <b>"+cards.length+"まい</b>",
+      qy:["仲間集めをします",yomi+"を探してください。カードは"+cards.length+"枚あります"],
+      list:cards.map(function(c){return c.k}),
+      ay:["正解のカードは"+cards.length+"枚で、"+cards.map(function(c){return c.y}).join("、")+"です"]});
+  }
   if(cfg.form.indexOf("mix")>-1)
     cfg.season.forEach(function(s){cfg.cat.forEach(function(c){
       add(S(s)[1]+"の "+K(c)[1],S(s)[2]+"の"+K(c)[2],p.filter(function(x){return x.s===s&&x.c===c}),s)})});
@@ -200,28 +243,111 @@ function nakamaQs(){
     cfg.season.forEach(function(s){add(S(s)[1]+"の かーど",S(s)[2]+"のカード",p.filter(function(x){return x.s===s}),s)});
   if(cfg.form.indexOf("cat")>-1)
     cfg.cat.forEach(function(c){add(K(c)[1]+"の かーど",K(c)[2]+"のカード",p.filter(function(x){return x.c===c}),"")});
+  return shuffle(qs);
+}
+
+// なかまはずれ: おなじ きせつ 3つ + ちがう きせつ 1つ（できるだけ おなじ しゅるいで）
+function hazureCands(){
+  var p=poolNoBame(),same=[],loose=[];
+  cfg.season.forEach(function(s){
+    var inS=p.filter(function(x){return x.s===s}),outS=p.filter(function(x){return x.s!==s});
+    if(!outS.length)return;
+    CATS.forEach(function(ct){
+      var a=inS.filter(function(x){return x.c===ct[0]}),b=outS.filter(function(x){return x.c===ct[0]});
+      if(a.length>=3&&b.length)same.push({s:s,a:a,b:b,c:ct[0]});
+    });
+    if(inS.length>=3)loose.push({s:s,a:inS,b:outS,c:""});
+  });
+  return same.length?same:loose;
+}
+function hazureQs(){
+  var cand=hazureCands(),qs=[],last="";
+  if(!cand.length)return qs;
+  for(var n=0;n<cfg.num;n++){
+    var x,odd,three,key,tries=0;
+    do{x=pick(cand);three=shuffle(x.a).slice(0,3);odd=pick(x.b);key=odd.k;tries++}while(key===last&&tries<10);
+    last=key;
+    var four=shuffle(three.concat([odd]));
+    var others=S(x.s)[1]+(x.c?"の "+K(x.c)[1]:""),othersY=S(x.s)[2]+(x.c?"の"+K(x.c)[2]:"");
+    qs.push({sq:"",sa:odd.s,
+      q:"<b>なかまはずれ</b>は どれ？",
+      qy:["仲間はずれはどれかな？"].concat(four.map(function(c){return c.y})),
+      list0:four.map(function(c){return c.k}),
+      a:odd.k+"<small>"+odd.k+"は "+S(odd.s)[1]+"、ほかは "+others+"</small>",
+      ay:["答えは、"+odd.y+"です",odd.y+"は"+S(odd.s)[2]+"、ほかは"+othersY+"です"]});
+  }
   return qs;
 }
 
+// どの きせつ？
+function kisetsuQs(){
+  return shuffle(poolNoBame()).slice(0,cfg.num).map(function(c){
+    return{sq:"",sa:c.s,
+      q:"<b>"+c.k+"</b><br>どの きせつ？",
+      qy:[c.y,"どの季節かな？"],
+      a:S(c.s)[1]+(c.m?"<small>"+MONTH[c.m]+"の ぎょうじ</small>":""),
+      ay:["答えは、"+S(c.s)[2]+"です"+(c.m?"。"+c.m+"月の行事です":"")]}});
+}
+
+// まる・ばつ（はんぶんくらいが まる）
+function marubaQs(){
+  return shuffle(poolNoBame()).slice(0,cfg.num).map(function(c){
+    var ok=Math.random()<0.5;
+    var s=ok?c.s:pick(SEASONS.filter(function(x){return x[0]!==c.s}))[0];
+    return{sq:"",sa:c.s,
+      q:"<b>"+c.k+"</b>は<br><b>"+S(s)[1]+"</b>の "+kind(c)+"？",
+      qy:[c.y+"は、"+S(s)[2]+"の"+kindY(c)+"です","まるかな？ばつかな？"],
+      a:ok?"⭕ まる":"❌ ばつ<small>"+c.k+"は "+S(c.s)[1]+"の "+kind(c)+"</small>",
+      ay:ok?["答えは、まる。"+c.y+"は"+S(c.s)[2]+"の"+kindY(c)+"です"]:["答えは、ばつ。"+c.y+"は"+S(c.s)[2]+"の"+kindY(c)+"です"]}});
+}
+
+// ぎょうじの じゅんばん（つぎ・まえ。12がつの つぎは 1がつ）
+function junbanQs(){
+  var G=CARDS.filter(function(c){return c.c==="gyo"}).sort(function(a,b){return a.m-b.m});
+  var all=[];
+  G.forEach(function(g,i){
+    [["つぎ","次",1],["まえ","前",-1]].forEach(function(d){
+      var t=G[(i+d[2]+12)%12];
+      all.push({sq:"",sa:t.s,
+        q:"<b>"+g.k+"</b>の<br><b>"+d[0]+"</b>の ぎょうじは？",
+        qy:[g.y+"の、"+d[1]+"の行事は、なにかな？"],
+        a:t.k+"<small>"+MONTH[t.m]+"</small>",
+        ay:["答えは、"+t.y+"です。"+t.m+"月の行事です"]});
+    });
+  });
+  return shuffle(all).slice(0,cfg.num);
+}
+
+function makeDeck(){
+  switch(game){
+    case "karuta":return shuffle(pool());
+    case "nakama":return nakamaQs();
+    case "hazure":return hazureQs();
+    case "kisetsu":return kisetsuQs();
+    case "maruba":return marubaQs();
+    case "junban":return junbanQs();
+  }
+}
+
 function count(){
-  var n=game==="karuta"?pool().length:nakamaQs().length;
-  $("cnt").textContent=game==="karuta"?("かーどは "+n+"まい"):("もんだいは "+n+"もん");
+  var n=makeDeck().length;
+  $("cnt").textContent=game==="karuta"?("かーどは "+n+"まい"):n?("もんだいは "+n+"もん"):"この えらびかたでは もんだいが つくれないよ";
   $("start").disabled=n===0;
 }
 
 function openSetup(g){
-  game=g;
-  $("setup-title").textContent=g==="karuta"?"🎴 かるた":"🧺 なかまあつめ";
-  $("sec-form").style.display=g==="nakama"?"":"none";
-  $("sec-think").style.display=g==="nakama"?"":"none";
+  game=g;var G=GAMES[g];
+  $("setup-title").textContent=G.t;
+  Array.prototype.forEach.call(document.querySelectorAll("#s-setup .sec[data-k]"),function(el){
+    el.style.display=G.sec.indexOf(el.getAttribute("data-k"))>-1?"":"none"});
   $("gap-lb").textContent=g==="karuta"?"よみあげの かんかく":"こたえの あと つぎまでの かんかく";
   multi("c-season",SEASONS,"season",true);
   multi("c-cat",CATS.map(function(c){return[c[0],c[1],c[2],c[3]]}),"cat");
   multi("c-form",FORMS,"form");
+  single("c-num",[[5,"5もん"],[10,"10もん"],[20,"20もん"]],"num");
   single("c-think",[[5,"5びょう"],[10,"10びょう"],[15,"15びょう"],[20,"20びょう"],[30,"30びょう"]],"think");
   single("c-gap",[[3,"3びょう"],[5,"5びょう"],[7,"7びょう"],[9,"9びょう"]],"gap");
   single("c-rate",[[0.7,"ゆっくり"],[0.85,"ふつう"],[1,"はやい"]],"rate");
-  // ひょうじ（もんだい・こたえ を別々にオンオフ）
   var el=$("c-show");el.innerHTML="";
   [["showQ","もんだい"],["showA","こたえ"]].forEach(function(it){
     var b=document.createElement("button");
@@ -229,9 +355,10 @@ function openSetup(g){
     b.onclick=function(){cfg[it[0]]=!cfg[it[0]];paint();save()};paint();el.appendChild(b)});
   count();show("s-setup");
 }
-$("m-karuta").onclick=function(){openSetup("karuta")};
-$("m-nakama").onclick=function(){openSetup("nakama")};
-$("tomenu").onclick=function(){show("s-menu")};
+["karuta","nakama","hazure","kisetsu","maruba","junban"].forEach(function(g){$("m-"+g).onclick=function(){openSetup(g)}});
+$("m-free").onclick=function(){show("s-menu2")};
+$("m-back").onclick=function(){show("s-menu")};
+$("tomenu").onclick=function(){show(GAMES[game].menu)};
 
 // ===== よみあげ =====
 var voices=[],lock=null;
@@ -246,7 +373,7 @@ function pickVoice(){
 function keepAwake(){try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){lock=l}).catch(function(){})}catch(e){}}
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&$("s-game").className.indexOf("on")>-1)keepAwake()});
 
-var run=0; // 操作のたびに増やして、古いタイマーやよみあげの続きを止める
+var run=0,timer=null; // 操作のたびに run を増やして、古いタイマーやよみあげの続きを止める
 function stopAll(){run++;clearTimeout(timer);if(window.speechSynthesis)speechSynthesis.cancel()}
 // parts を順番に読む（あいだに少し間をあける）
 function say(parts,cb){
@@ -266,15 +393,13 @@ function say(parts,cb){
 function wait(sec,fn){var my=run;clearTimeout(timer);timer=setTimeout(function(){if(my===run)fn()},sec*1000)}
 
 // ===== ゲーム =====
-var deck=[],pos=-1,phase="",auto=false,timer=null,revealed=false;
-
-function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+var deck=[],pos=-1,phase="",auto=false,revealed=false;
 
 function startGame(){
-  deck=shuffle(game==="karuta"?pool():nakamaQs());pos=-1;phase="";
+  deck=makeDeck();pos=-1;phase="";
   setAuto(false);show("s-game");keepAwake();
   $("pos").textContent="";$("card").className="card";
-  $("ico").textContent=game==="karuta"?"🎴":"🧺";$("q").className="q";$("a").className="a";$("alist").innerHTML="";
+  $("ico").textContent=GAMES[game].ico;$("q").className="q";$("a").className="a";$("alist").innerHTML="";
   $("q").innerHTML="<b>"+deck.length+"</b>"+(game==="karuta"?"まいの かーどを よむよ":"もんの もんだいを だすよ");
   $("a").textContent="すたーと ▶";
   $("next").textContent="すたーと ▶";$("reveal").style.visibility="hidden";
@@ -287,72 +412,74 @@ function karutaHint(c){
   return{t:"<b>"+S(c.s)[1]+"</b>の "+K(c.c)[1],y:S(c.s)[2]+"の"+K(c.c)[2]+"です"};
 }
 
+function chips(arr){var box=document.createElement("div");box.className="alist";arr.forEach(function(t){var s=document.createElement("span");s.textContent=t;box.appendChild(s)});return box}
+
 function render(){
   var it=deck[pos];if(!it)return;
   $("pos").textContent=(pos+1)+" / "+deck.length;
   $("reveal").style.visibility="visible";
-  $("card").className="card "+(it.s||"");
-  $("alist").innerHTML="";$("a").textContent="";
-  var showA=cfg.showA||revealed;
+  $("alist").innerHTML="";$("alist").className="alist";$("a").innerHTML="";
+  var qOn=cfg.showQ||revealed;
   if(game==="karuta"){
+    var showA=cfg.showA||revealed;
+    $("card").className="card "+it.s;
     $("ico").textContent=K(it.c)[3];
-    $("q").innerHTML=karutaHint(it).t;$("q").className="q"+(cfg.showQ||revealed?"":" hid");
+    $("q").innerHTML=karutaHint(it).t;$("q").className="q"+(qOn?"":" hid");
     $("a").textContent=it.k;$("a").className="a"+(showA?"":" hid");
     $("reveal").className=showA?"act":"";
-  }else{
-    $("ico").textContent=it.c?"":"🧺";
-    $("q").innerHTML="<b>"+it.label+"</b>を さがそう<br>かーどは <b>"+it.cards.length+"まい</b>";
-    $("q").className="q"+(cfg.showQ||revealed?"":" hid");
-    if(phase==="a"){
-      it.cards.forEach(function(c){var s=document.createElement("span");s.textContent=c.k;$("alist").appendChild(s)});
-      $("alist").className="alist"+(showA?"":" hid");
-    }else if(revealed){
-      it.cards.forEach(function(c){var s=document.createElement("span");s.textContent=c.k;$("alist").appendChild(s)});
-      $("alist").className="alist";
-    }
-    $("reveal").className=revealed||(phase==="a"&&cfg.showA)?"act":"";
+    return;
   }
+  // こたえを みせるか: こたえフェーズなら せってい次第、もんだいフェーズなら 👀を おしたときだけ
+  var aOn=phase==="a"?(cfg.showA||revealed):revealed;
+  $("card").className="card "+((aOn?it.sa:it.sq)||"");
+  $("ico").textContent=GAMES[game].ico;
+  $("q").innerHTML=it.q;$("q").className="q"+(qOn?"":" hid");
+  if(it.list0&&qOn)$("q").appendChild(chips(it.list0)); // なかまはずれの 4つ
+  if(aOn){
+    if(it.list)it.list.forEach(function(t){var sp=document.createElement("span");sp.textContent=t;$("alist").appendChild(sp)});
+    else{$("a").innerHTML=it.a;$("a").className="a"}
+  }
+  $("reveal").className=aOn?"act":"";
 }
 
 function speech(){
   var it=deck[pos];
   if(game==="karuta")return[karutaHint(it).y,it.y];
-  if(phase==="q")return[(pos>0?"次の問題です。":"")+"仲間集めをします",it.yomi+"を探してください。カードは"+it.cards.length+"枚あります"];
-  return["正解のカードは"+it.cards.length+"枚で、"+it.cards.map(function(c){return c.y}).join("、")+"です"];
+  if(phase==="q"){var p=it.qy.slice();if(pos>0)p.unshift("次の問題です");return p}
+  return it.ay;
 }
 
 function finish(){
   phase="end";$("pos").textContent="";$("card").className="card";$("reveal").style.visibility="hidden";
   $("ico").textContent="🎉";$("q").className="q";$("q").innerHTML="";$("a").className="a";$("a").textContent="おしまい！";$("alist").innerHTML="";
-  $("next").textContent="もういちど ▶";setAuto(false,true);
+  $("next").textContent="もういちど ▶";setAuto(false);
   say(["おしまいです"]);
 }
 
+function twoPhase(){return game!=="karuta"}
 // 1ステップ進める
 function step(){
   stopAll();
   if(phase==="end"){startGame();return}
-  if(game==="nakama"&&phase==="q"){phase="a";revealed=false;render();updNext();say(speech(),afterSpeak);return}
+  if(twoPhase()&&phase==="q"){phase="a";revealed=false;render();updNext();say(speech(),afterSpeak);return}
   pos++;
   if(pos>=deck.length){finish();return}
   phase="q";revealed=false;render();updNext();say(speech(),afterSpeak);
 }
-function updNext(){$("next").textContent=(game==="nakama"&&phase==="q")?"こたえ ▶":(pos>=deck.length-1&&(game==="karuta"||phase==="a")?"おわり ▶":"つぎ ▶")}
+function updNext(){$("next").textContent=(twoPhase()&&phase==="q")?"こたえ ▶":(pos>=deck.length-1?"おわり ▶":"つぎ ▶")}
 function afterSpeak(){
   if(!auto)return;
-  if(game==="nakama"&&phase==="q")wait(cfg.think,step);
+  if(twoPhase()&&phase==="q")wait(cfg.think,step);
   else wait(cfg.gap,step);
 }
-function setAuto(on,silent){
-  auto=on;$("auto").textContent=on?"■ とめる":"じどう ▶";$("auto").className=on?"act":"";
-}
+function setAuto(on){auto=on;$("auto").textContent=on?"■ とめる":"じどう ▶";$("auto").className=on?"act":""}
 
 $("next").onclick=function(){step()};
 $("auto").onclick=function(){
   if(auto){setAuto(false);stopAll();return}
+  if(phase==="end")startGame();
   setAuto(true);
-  if(phase==="end"){startGame();setAuto(true)}
-  step();
+  if(pos<0)step();else afterSpeak();
 };
 $("again").onclick=function(){
   if(pos<0||phase==="end"||!deck[pos])return;
